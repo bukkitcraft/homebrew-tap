@@ -10,7 +10,16 @@ class Omn < Formula
   def install
     libexec.install "omn", "src"
     libexec.install "bannerlong.txt", "bannershort.txt"
-    bin.write_exec_script libexec/"omn"
+
+    # Wrapper runs the launcher with Homebrew's python3 and the source tree on
+    # PYTHONPATH, so it works wherever the user's own python3 points.
+    python = Formula["python@3.12"].opt_bin/"python3"
+    (bin/"omn").write <<~EOS
+      #!/bin/bash
+      export PYTHONPATH="#{libexec}/src"
+      exec "#{python}" "#{libexec}/omn" "$@"
+    EOS
+    (bin/"omn").chmod 0755
     bin.install_symlink bin/"omn" => "ohmynotes"
   end
 
